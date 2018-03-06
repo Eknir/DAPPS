@@ -5,6 +5,10 @@ contract Splitter {
 	address bob;
 	address carol;
 
+	mapping(address => uint) balances;
+
+	// modifier is alice
+
 	function Splitter(address _bob, address _carol) public payable {
 		alice = msg.sender;
 		bob = _bob;
@@ -15,13 +19,12 @@ contract Splitter {
 		return this.balance;
 	}
 
-	function splitAlice() public payable returns (bool) {
+	function split() public returns (bool) {
 		require(msg.sender == alice);
-		uint value = msg.value;
-		uint half = value /2;
-		bob.transfer(half);
-		carol.transfer(half);
-		return true;
+		uint half = balances[alice] / 2;
+		balances[carol] += half;
+		balances[bob] += half;
+		return (true);
 	}
 
 	function getIndividualBalance() public view returns (
@@ -29,12 +32,12 @@ contract Splitter {
 		uint,
 		uint) {
 
-		return(alice.balance, bob.balance, carol.balance);
+		return(balances[alice], balances[bob], balances[carol]);
 		    
 		}
 
 
-	function() public payable {
-
+	function() public payable { // this is the deposit
+		balances[alice]+= msg.value;
 	}
 }
