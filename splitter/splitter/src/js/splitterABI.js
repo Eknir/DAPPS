@@ -1,4 +1,46 @@
-var abiArray = [
+const abiArray = [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "carol",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "bob",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "alice",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
     {
       "inputs": [
         {
@@ -36,13 +78,13 @@ var abiArray = [
       "inputs": [
         {
           "indexed": false,
-          "name": "_newBalanceBob",
+          "name": "_value",
           "type": "uint256"
         },
         {
-          "indexed": false,
-          "name": "_newBalanceCarol",
-          "type": "uint256"
+          "indexed": true,
+          "name": "_sender",
+          "type": "address"
         }
       ],
       "name": "LogSplit",
@@ -64,20 +106,6 @@ var abiArray = [
       ],
       "name": "LogWithdrawal",
       "type": "event"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getBalance",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
     },
     {
       "constant": false,

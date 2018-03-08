@@ -1,12 +1,11 @@
 pragma solidity ^0.4.17;
 
 contract Splitter {
-	address alice;
-	address bob; 
-	address carol; 
-	
+	address public alice;
+	address public bob; 
+	address public carol; 
 	event LogDeposit(uint _depositAmount);
-	event LogSplit(uint _newBalanceBob, uint _newBalanceCarol);
+	event LogSplit(uint _value, address indexed _sender);
 	event LogWithdrawal(address indexed _receiver, uint _value);
 
 	mapping(address => uint) balances;
@@ -16,18 +15,16 @@ contract Splitter {
 		bob = _bob;
 		carol = _carol;
 	}
-
-	function getBalance() public view returns (uint) {
-		return this.balance;
-	}
 	
 	function split() public payable {
-		//TODO! odd numbers
 	    require(msg.sender == alice);
+	    if(msg.value % 2 != 0) {
+	    	balances[alice] += 1;
+	    }
 	    uint half = msg.value/2;
 	    balances[bob] += half;
 	    balances[carol] += half;
-	    LogSplit(balances[bob], balances[carol]);
+	    LogSplit(msg.value, msg.sender);
 	}
 	
 	function withdraw() public {
@@ -50,6 +47,6 @@ contract Splitter {
 		}
 		
 	function() public {
-		//TODO revert()
+		revert();
     }
 }

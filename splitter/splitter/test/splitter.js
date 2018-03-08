@@ -1,27 +1,32 @@
 const Splitter = artifacts.require("./Splitter.sol");
 
-contract("Splitter", function(accounts) {
+contract("Splitter", accounts => {
+	//console.log(Splitter.alice());
 	
-	var contract;
+	var myContract;
 	var alice = accounts[0];
-	var bob = web3.eth.accounts[1];
-	var carol = web3.eth.accounts[2];
+	var bob = accounts[1];
+	var carol = accounts[2];
 
 	beforeEach(function() {
 		return Splitter.new(bob, carol, {from: alice})
 		.then(function(instance) {
-		contract = instance;
+		myContract = instance;
 		});
 	});
 
-it("Should just say hello", function() {
-	assert.strictEqual(true,true,"Something is wrong.");
-});
-
-it("should split even amounts", function() {
-	return contract({from: alice})
-	.then(function(_alice) {
-		assert.strictEqual(alice, web3.eth.accounts[0], "Contract is not owned by Alice");
+	it("should be owned by Alice", function() {
+		return myContract.split({from: alice})
+		.then
+		let instance;
+		return Splitter.deployed()
+		.then(_instance => {
+			instance = _instance;
+			return instance.alice({from: alice});
+		})
+		.then(_alice => {
+			assert.strictEqual(alice, _alice, "Is not owned by Alice");
+		});
 	});
 });
-})
+
