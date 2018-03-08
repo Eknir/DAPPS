@@ -1,0 +1,29 @@
+<html>
+<head>
+    <title>Faucet</title>
+    <script src="js/web3.js"></script>
+    <script src="js/splitterABI.js"></script>
+    <script src="js/splitter.js"></script>
+</head>
+<body>
+    <button onclick="getBalance()">getBalance</button>
+    <p id = balance></p>
+
+    <button onclick= "getIndividualBalance()">getIndividualBalance</button>
+    <p id = individualBalance></p>
+  
+  	<form id="split">
+  		<input type="number" id="value">
+  		<input type="submit" value="split!">
+	</form>
+
+	<form id="withdraw"> 
+		<select id = "person">
+			<option selected disabled class="hideoption">Select person</option>
+    		<option value="bob">bob</option>
+    		<option value="carol">carol</option>
+  		</select>
+  		<input type="submit" value="withdraw">
+	</form>
+</body>
+</html>
