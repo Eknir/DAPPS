@@ -1,0 +1,28 @@
+<html>
+<head>
+    <title>Faucet</title>
+    <script src="js/web3.js"></script>
+    <script src="js/splitterABI.js"></script>
+    <script src="js/splitter.js"></script>
+</head>
+<body>
+    <h1>Balance:</h1>
+    <h3 id = balance>...</h3>
+
+    <h1>Individual Balances<h1>
+    <h3 id = individualBalance>...</h3>
+  
+  	<form id="split">
+  		<input type="number" id="value", value = "">
+  		<input type="submit" value="split!">
+	</form>
+  <p id = errorSplit></p>
+
+	<form id="withdraw"> 
+  		<input type="submit" value="withdraw">
+
+  <form id="kill"> 
+      <input type="submit" value="kill">
+	</form>
+</body>
+</html>
