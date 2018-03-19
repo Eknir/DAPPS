@@ -1,0 +1,26 @@
+{
+  "name": "remittance",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "file-loader": "^1.1.11",
+    "truffle": "^4.0.5",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.12"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "jquery": "^3.3.1",
+    "truffle-contract": "^3.0.4",
+    "web3": "^0.20.4"
+  }
+}
