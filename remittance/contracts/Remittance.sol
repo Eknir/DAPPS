@@ -1,118 +1,112 @@
-pragma solidity ^0.4.1;
+pragma solidity ^0.4.19;
+
+//TODO! what if one person makes multiple remittance contracts?
 
 contract Remittance {
-    
+
+    address public owner;
+    bool public alive = true;
+
+    // variables sender and deadline are needed to provide the option to retrieve unclaimed remittance
     struct remittanceStruct {
-        address sender;
         uint value;
-        address exchange;
-        bytes32 secret1Hash;
-        bytes32 secret2Hash;
         uint deadline;
     }
     
-    mapping(address => uint) nonce;
-    mapping(bytes32 => remittanceStruct) contracts;
+    // We create a special container which can be accessed by a special hash
+        mapping(bytes32 => remittanceStruct) public contracts;
+        mapping(address => uint) public nonces;
+
+    event LogRemittanceCreated(address indexed _sender, uint _value, uint _nonce, address indexed _exchange, bytes32 _secretsHash, uint _duration);
+    event LogRemittanceSolved(address indexed _exchange, uint _value, uint _nonce, address indexed _sender);
+    event LogRemittanceRetrieved(address indexed _sender, uint _value, uint _nonce );
     
-    event logSolved(address indexed _exchange, uint value);
-    event logRemittanceCreated(address indexed _sender, uint _nonce, uint _value, address indexed _exchange, bytes32 _secret1Hash, bytes32 _secret2Hash, uint16 _duration );
+    function Remittance() {
+        owner = msg.sender;
+    }
+
+    modifier isAlive() {
+        require(alive);
+        _;
+    }
+
+    modifier isOwner() {
+        require(msg.sender == owner);
+        _;
+    }
     
+    //This function sets up a remittance container which is identified by a special hash
     function createRemittance(
         address _exchange, 
-        bytes32 _secret1Hash, 
-        bytes32 _secret2Hash, 
-        uint16 _duration
+        bytes32 _secretsHash,
+        uint16 _duration  
     ) 
-        public 
+        public
+        isAlive 
         payable
-        returns(
-            uint,
-            bytes32) 
     {
-        require(_duration <=  65535); // maximum deadline (also max range of uint 16)
-            
-        // We identify each contract by the hash of the address and a nonce
-        bytes32 contractId = keccak256(msg.sender, nonce[msg.sender]);
-            
-        // Set contract values
-        contracts[contractId].sender = msg.sender;
-        contracts[contractId].value = msg.value;
-        contracts[contractId].exchange = _exchange;
-        contracts[contractId].secret1Hash = _secret1Hash;
-        contracts[contractId].secret2Hash = _secret2Hash;
-        contracts[contractId].deadline = block.number + _duration;
-            
-        // Check for integer overflow and update address
-        assert(nonce[msg.sender] < (nonce[msg.sender] + 1));
-        nonce[msg.sender] += 1;
+        // the maximum deadline is 65535 (max range of uint16), which approximates to 1.5 week, given an average blocktime of 15 seconds
+        require(_duration <=  65535);
 
-        return(nonce[msg.sender] -1, contractId);
+        // We identify each container by the hash of the passwords and the address of the exchange
+        bytes32 identifier = keccak256(nonces[msg.sender], msg.sender, _exchange, _secretsHash);
         
-        // Event    
-        logRemittanceCreated(msg.sender, (nonce[msg.sender] -1), msg.value, _exchange, _secret1Hash, _secret2Hash, _duration);
+        // update the nonce, such that the next contract created will have it's unique identifier 
+        nonces[msg.sender] +=1; 
+        contracts[identifier].value = msg.value;    
+        contracts[identifier].deadline = block.number + _duration;
+    
+        LogRemittanceCreated(msg.sender, msg.value, (nonces[msg.sender] -1), _exchange, _secretsHash, _duration);
     }
     
-    // This function can be called to view the remittance contracts
-    function getRemittance(
-        address _sender,
-        uint _nonce
-    ) 
-        public 
-        view 
-        returns(
-            address _exchange, 
-            bytes32 _secret1Hash, 
-            bytes32 _secret2Hash, 
-            uint _deadline
-        ) 
-    {
-        bytes32 contractId =  keccak256(_sender, _nonce);
-        
-        return (
-            contracts[contractId].exchange,
-            contracts[contractId].secret1Hash,
-            contracts[contractId].secret2Hash,
-            contracts[contractId].deadline
-        );
-        
-    }
-    
-    // This function can be called by the exchange and will send the ether if the deadline has not passed and the correct passwords are given
+    // This function can be called by the exchange and will send the ether if the correct passwords are given
     function solveRemittance(
-        bytes32 _contractId, 
-        string secret1, 
-        string secret2
+        uint nonce,
+        string secret1,
+        string secret2,
+        address sender
     ) 
     public {
-        // Requirements
-        require(block.number <= contracts[_contractId].deadline);
-        require(msg.sender == contracts[_contractId].exchange);
-        require(keccak256(secret1) == contracts[_contractId].secret1Hash);
-        require(keccak256(secret2) == contracts[_contractId].secret2Hash);
+        bytes32 identifier = keccak256(nonce, sender, msg.sender, keccak256(secret1, secret2));
         
-        // Send if requirements are met
-        msg.sender.transfer(contracts[_contractId].value);
+        uint value = contracts[identifier].value;
+        contracts[identifier].value == 0;
         
-        // Event
-        logSolved(msg.sender, contracts[_contractId].value);
+        LogRemittanceSolved(msg.sender, value, nonce, sender);
+
+        msg.sender.transfer(value);
     }
     
-    // This function sends back the ether to the sender if the deadline has passed
-    function retrieve(bytes32 _contractId) public {
-        require(msg.sender == contracts[_contractId].sender);
-        require(block.number >= contracts[_contractId].deadline);
-        msg.sender.transfer(contracts[_contractId].value);
+    // This function give the option to a remittance contract creator to claim back the value of the remittance after the deadline expiress
+    function retrieveRemittance(
+        uint nonce,
+        string secret1,
+        string secret2,
+        address _exchange
+        ) public {
+        bytes32 identifier = keccak256(nonce, msg.sender, _exchange, keccak256(secret1, secret2));
+        require(block.number > contracts[identifier].deadline);
+        
+        uint value = contracts[identifier].value;
+        contracts[identifier].value == 0;
+
+        LogRemittanceRetrieved(msg.sender, value, nonce);
+
+        msg.sender.transfer(value);
+    }
+
+    //TODO make an event here as well
+    function kill() public isOwner {
+        alive = false;
     }
     
-    // This function is just for testing purposes
-      function hash(string _secret1, string _secret2) public returns(bytes32, bytes32) {
-        bytes32 hash1 = keccak256(_secret1);
-        bytes32 hash2 = keccak256(_secret2);
-        return(hash1, hash2);
+    // This function is just for convenience
+    function hash(string _secretOne, string _secretTwo) public view returns(bytes32) {
+        bytes32 hashed = keccak256(_secretOne, _secretTwo);
+        return(hashed);
     }
-    
+
 }
-    
     
     
 

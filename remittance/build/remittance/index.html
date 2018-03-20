@@ -4,27 +4,44 @@
     <script src="js/remittance.js"></script>
 </head>
 <body>
-    <h1>Remittance</h1>
+    <h1 hidden color:"red">This contract does not accept new remmittances anymore!</h1>
+    <h1>Create, claim and retrieve your Remittance</h1>
     <p id = contractAddress></p>
     <p id = account></p>
-    <p id = contracts></p>
 
-    <h2>Set up your own remittance</h2>
-    <form id = "setupForm">
+    <h2>Do you want to setup a remittance Scheme?</h2>
+    <h3>Create your own contract!</h3>
+    <form id = "createForm">
       Exchange address:   <input type="text" name='exchange'><br>
-      Secret 1 hash:      <input type="text" name="secret1Hash"><br>
-      Secret 2 hash:      <input type="text" name="secret2Hash"><br>
-      duration in blocks: <input type="number" min="1" max="65535" name="duration"><br>
-      Value in Eth:       <input type="number" min ="0" name="value"><br>
+      Secrets hash:       <input type="text" name="secretsHash"><br>
+      Duration in blocks: <input type="number" min="1" max="65535" name="duration"><br>
+      Value in Ethereum:  <input type="number" min ="0" name="value"><br>
                           <input type="submit" value="Set"><br>
     </form>
 
-    <h2>Claim remittance</h2>
-    <form id = "claimForm">
-      Contract Id:        <input type="text" name="contractId"><br>
+    <h2>Do you want to claim remittance?</h2>
+    <h3>Solve the puzzle which was given by the creator of the contract!</h3>
+    <form id = "solveForm">
+      Contract number:    <input type="text" name="nonce"><br>
+      Sender:             <input type="text" name="sender"><br>
       Secret 1:           <input type="text" name="secret1"><br>
       Secret 2:           <input type="text" name="secret2"><br>
                           <input type="submit" value="Claim"><br>
     </form>
+
+    <h2>Is your remittance still not claimed?</h2>
+    <h3>Retrieve the value from your previously setup contract!</h3>
+    <form id = "retrieveForm">
+      Contract number:    <input type="text" name="nonce"><br>
+      exchange address:   <input type="text" name="exchange"><br>
+      Secret 1:           <input type="text" name="secret1"><br>
+      Secret 2:           <input type="text" name="secret2"><br>
+                          <input type="submit" value="Retrieve"><br>
+    </form>
+
+     <p id = created><b>Contracts created by you: </b></p>
+     <p id = solved><b>Contracts sucessfully solved by exchange: </b></p>
+     <p id = retrieved><b>Contracts retrieved by you: </b></p>
+
 </body>
 </html>

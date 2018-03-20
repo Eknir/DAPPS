@@ -28,35 +28,48 @@ let account;
 
 function createRemittance(_values) {
     const exchange = _values[0].value;
-    const secret1Hash = _values[1].value;
-    const secret2Hash = _values[2].value;
-    const duration = _values[3].value;
-    const value = _values[4].value;
+    const secretsHash = _values[1].value;
+    const duration = _values[2].value;
+    const value = _values[3].value;
 
-    console.log(exchange, secret1Hash, secret2Hash, duration, value)
+    console.log(duration);
+
+    console.log(_values);
 
     Remittance.deployed()
     .then(deployed => {
-        deployed.createRemittance(exchange, secret1Hash, secret2Hash, duration, {from: account, gas: 200000, value: web3.toWei(value, "ether")});
+        deployed.createRemittance(exchange, secretsHash, duration, {from: account, gas: 200000, value: web3.toWei(value, "ether")});
     });
-}
+};
 
 function solveRemittance(_values) {
-    const contractId = values[0].value;
-    const secret1 = values[1].value;
-    const secret2 = values[2].value;
+    const nonce = _values[0].value;
+    const sender = _values[1].value;
+    const secret1 = _values[2].value;
+    const secret2 = _values[3].value;
 
     Remittance.deployed()
     .then(deployed => {
-        deployed.solveRemittance(contractId, secret1, secret2)
-    })
-}
+        deployed.solveRemittance(nonce, secret1, secret2, sender, {from:account})
+    });
+};
 
-// discover the account we connected to and update the balance accordingly
+function retrieveRemittance(_values) {
+    const nonce = _values[0].value;
+    const exchange = values[1].value;
+    const secret1 = _values[2].value;
+    const secret2 = _values[3].value;
+
+    Remittance.deployed()
+    .then(deployed => {
+        deployed.retrieveRemittance(nonce, secret1, secret2, exchange, {from: account});
+    });
+
+};
+
 window.addEventListener('load', function() {
 
     let instance;
-    let accounts;
     Remittance.deployed()
     .then(_instance => {
         instance = _instance;
@@ -68,42 +81,85 @@ window.addEventListener('load', function() {
 
         $("#contractAddress").html("Contract address: " + instance.address);
 
+        // event listeners
+        var RemittanceCreated = instance.LogRemittanceCreated({sender: account}, {fromBlock:0, toBlock: 'latest'}).watch(function(error, response) {
+            if(!error) {
+                var existingHTML = $("#created").html();
+                console.log(response.args._duration.toNumber(10), response.blockNumber)
+                $("#created").html(
+                    existingHTML + 
+                    "<div>Contract number: " + response.args._nonce.toNumber(10) + 
+                    "<br>Block number created: " + response.blockNumber +
+                    "<br>Deadline at block number: " + (response.args._duration.toNumber(10) + response.blockNumber) +
+                    "<br>Exchange Address: " + response.args._exchange + 
+                    "<br>Secrets hash: " + response.args._secretsHash + 
+                    "<br><br></div>"
+                    );
+                console.log(response.args._testDeadline.toNumber(10))
+            }      
+        });
+
+        var RemittanceSolved = instance.LogRemittanceSolved({_sender: account}, {fromBlock:0, toBlock: 'latest'}).watch(function(error, response) {
+            if(!error) {
+                var existingHTML = $("#solved").html();
+
+                $("#solved").html(
+                    existingHTML +
+                    "<div>Contract number: " + response.args._nonce.toNumber(10) + 
+                    "<br>At block: " + response.blockNumber +
+                    "</div>"
+                    );                    
+            }
+        });
+
+        var RemittanceRetrieved = instance.LogRemittanceRetrieved({_sender: account}, {fromBlock:0, toBlock: 'latest}'}).watch(function(error, response) {
+            if(!error) {
+                var existingHTML = $("retrieved").html();
+
+                $("retrieved").html(
+                    existingHTML +
+                    "<div>Contract number" + response.args._nonce.toNumber(10) + 
+                    "<br>At block: " + response.blockNumber + 
+                    "</div>"
+                    );
+            }
+        });
+
         return web3.eth.getAccountsPromise();
         })
 
     .then(_accounts => {
-        accounts = _accounts;
-        account = accounts[0];
-        if(accounts.length == 0) {
+        account = _accounts[0];
+        if(_accounts.length == 0) {
             $("#account").html("N/A");
             throw new Error("No accounts to interact with");
         }
         $("#account").html("Interacting from account: " + account);
-       
-       for(var i = 0; i < 4; i+=1) {
-        instance.getRemittance(account, i, {from:account}) 
-                .then(result => {
-                    let nullAddress = "0x0000000000000000000000000000000000000000";
-                    if(result[0] != nullAddress) {
-                        // update the inner HTML of contracts such that all contracts are displayed.
-                    }
-                })
-            }
+        })
 
     
-
-    })
-
-
-    $("#setupForm").submit(function() {
+    $("#createForm").submit(function(e) {
+        e.preventDefault();
         var values = $(this).serializeArray();
+        $("#createForm")[0].reset();
         createRemittance(values); 
     })
+
+    console.log($("#createForm"))
     
-    $("#claimForm").submit(function() {
+    $("#solveForm").submit(function(e) {
+        e.preventDefault();
+        $("#solveForm")[0].reset();
         var values = $(this).serializeArray();
         solveRemittance(values);
     });
+
+    $("#retrieveForm").submit(function(e) {
+        e.preventDefault();
+        $("#retrieveForm")[0].reset();
+        var values = $(this).serializeArray();
+        retrieveRemittance(values); 
+    })
 
 
 });
