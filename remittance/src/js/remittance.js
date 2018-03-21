@@ -32,12 +32,12 @@ function createRemittance(_values) {
     const duration = _values[2].value;
     const value = _values[3].value;
 
-    console.log(duration);
-
     console.log(_values);
 
     Remittance.deployed()
     .then(deployed => {
+
+        console.log("duration:", Number(duration));
         deployed.createRemittance(exchange, secretsHash, duration, {from: account, gas: 200000, value: web3.toWei(value, "ether")});
     });
 };
@@ -85,7 +85,8 @@ window.addEventListener('load', function() {
         var RemittanceCreated = instance.LogRemittanceCreated({sender: account}, {fromBlock:0, toBlock: 'latest'}).watch(function(error, response) {
             if(!error) {
                 var existingHTML = $("#created").html();
-                console.log(response.args._duration.toNumber(10), response.blockNumber)
+                console.log("Duration", response.args._duration.toString(10), "Block:", response.blockNumber);
+                console.log(response)
                 $("#created").html(
                     existingHTML + 
                     "<div>Contract number: " + response.args._nonce.toNumber(10) + 
@@ -93,9 +94,9 @@ window.addEventListener('load', function() {
                     "<br>Deadline at block number: " + (response.args._duration.toNumber(10) + response.blockNumber) +
                     "<br>Exchange Address: " + response.args._exchange + 
                     "<br>Secrets hash: " + response.args._secretsHash + 
+                    "<br>Value:" + response.args._value.toNumber(10) +
                     "<br><br></div>"
                     );
-                console.log(response.args._testDeadline.toNumber(10))
             }      
         });
 
@@ -144,8 +145,6 @@ window.addEventListener('load', function() {
         $("#createForm")[0].reset();
         createRemittance(values); 
     })
-
-    console.log($("#createForm"))
     
     $("#solveForm").submit(function(e) {
         e.preventDefault();
