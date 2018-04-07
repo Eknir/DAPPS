@@ -199,7 +199,7 @@ contract Verifier {
         )) return 5;
         return 0;
     }
-    event Verified(string);
+    event Verified(bool isVerified);
     function verifyTx(
             uint[2] a,
             uint[2] a_p,
@@ -225,7 +225,7 @@ contract Verifier {
             inputValues[i] = input[i];
         }
         if (verify(inputValues, proof) == 0) {
-            Verified("Transaction successfully verified.");
+            Verified(true);
             return true;
         } else {
             return false;

@@ -12,7 +12,7 @@ In order to get started, we have to first setup our environment. We use the ZoKr
 > cd ZoKrates
 
 // Build the Docker image
-> docker biuld -t zokrates .
+> docker build -t zokrates .
 
 // Run a zokrates contained and jump inside. We use the special -v flag, so the docker app gets files from our local storage (used later).
 > docker run -v path_to_local_storage:_prefered_place_to_store_in_app -ti zokrates /bin/bash
@@ -21,8 +21,8 @@ In order to get started, we have to first setup our environment. We use the ZoKr
 
 From now on, we assume all parties have set up the environment as above.
 
-Chamber of Commerce Actions:
-1. // Create a circuit (.code file) in the locale directory which copies to the app directory. See https://github.com/JacobEberhardt/ZoKrates/tree/develop/examples for examples of .code files. We use youngerThanX.code
+Chamber of Commerce does:
+1. // Create a circuit (.code file) in the locale directory which copies to the app directory. See https://github.com/JacobEberhardt/ZoKrates/tree/develop/examples for examples of .code files. We use FILE youngerThanX.code
 
 2. // in docker: compile the higher level .code into an actual circuit. This creates 2 files (out and out.code)
 > ./target/release/zokrates compile -i path_to_your_.code_file
@@ -31,10 +31,36 @@ Chamber of Commerce Actions:
 3. //in docker: run generator function, giving prover key (pk) and verification key (vk)
 > ./target/release/zokrates setup
 
-4. // in docker: create a solidity contract based on information above. This contract automatically includes the verification key hardcoded
-> ./target/release/zokrates export-verifier. The contract can be found in challenge.sol
+4. // in docker: create a solidity contract based on information above. This contract automatically includes the verification key hardcoded. We change two small things:
+	1. line 202 - event Verified(bool isVerified);
+	2. line 228 - Verified(true);
+The contract can be found in FILE verifier.sol
+> ./target/release/zokrates export-verifier
 
 5. //publish contract to Blockchain
 
-<Continue here>
+Wesley does:
+1. // Create the same circuit (.code file) as the Chamber of Commerce created before. Also in the locale directory which copies to the app directory. We use FILE youngerThanX.code
+
+2. // in docker: compile the higher level .code into an actual circuit. This creates 2 files (out and out.code)
+> ./target/release/zokrates compile -i path_to_your_.code_file
+(example: ./target/release/zokrates compile -i ./../data/youngerThanX.code)
+
+3. // create a witness. 1015 in this case is 3 years (1015 days), 300 is the (secret) actual age of the company
+> ./target/release/zokrates compute-witness -a 1015 300
+
+4. //generate a proof. This command will put out 8 arguments (A = (...), (...) K = (...)) on the terminal. We copy these values and put them in a document called input.txt. 
+> ./target/release/zokrates generate-proof
+
+5. // We use a python tool to parse input.txt to output.txt which can be directly used to pass to the (previously published) Solidity smart contract. In another terminal, go to the directory where input.txt was saved and make sure that FILE function_input.py resides here as well
+> python function_input.py input.txt
+
+6. // Open the newly generated output.txt and append one last array to the file. In this array, public inputs (in our case 1015, as well as 1 (the expected output of the .code)) is mentioned
+example: [1015, 1]. Save file
+
+7. // Copy all contents of output.file and send a transaction to verifier.sol (as published by the Chamber of Commerce)
+
+Wietze does:
+1. Watching the Blockchain untill he finds that a Wesley sends a transaction to the verifier contract of the Dutch Chamber of Commerce. If it outputs true: Yeah! Spot on, let's do the transaction. If false: Walk away as quick as possible, Wesley did not manage to produce a correct proof.
+
 
