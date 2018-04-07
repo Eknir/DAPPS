@@ -1,0 +1,40 @@
+In this document, I will explain how to generate a Zero Knowledge Proof which testifies that a company is a starter (less than 3 years) without giving the actual age of the company.
+
+In the example, there are three participants:
+1. Wesley - Wants to testify that her company is a startup, without giving the actual age of the company.
+2. Wietze - Needs to know that the business of Wesley is a startup, in order to do business
+3. Dutch Chamber of Commerce - Is the trusted party, dedicated to generate a challenge which is publicly available on the Blockchain and which will return true if and only if Alice can generate a valid proof
+
+Getting started:
+In order to get started, we have to first setup our environment. We use the ZoKrates implementation of Zero Knowledge Proofs from Jacob Eberhart.
+// clone directory and jump inside
+> git clone https://github.com/JacobEberhardt/ZoKrates.git
+> cd ZoKrates
+
+// Build the Docker image
+> docker biuld -t zokrates .
+
+// Run a zokrates contained and jump inside. We use the special -v flag, so the docker app gets files from our local storage (used later).
+> docker run -v path_to_local_storage:_prefered_place_to_store_in_app -ti zokrates /bin/bash
+(example: docker run -v ~/Documents/Projects/Hackathon/ZKP:/root/data -ti zokrates /bin/bash)
+> cd ZoKrates
+
+From now on, we assume all parties have set up the environment as above.
+
+Chamber of Commerce Actions:
+1. // Create a circuit (.code file) in the locale directory which copies to the app directory. See https://github.com/JacobEberhardt/ZoKrates/tree/develop/examples for examples of .code files. We use youngerThanX.code
+
+2. // in docker: compile the higher level .code into an actual circuit. This creates 2 files (out and out.code)
+> ./target/release/zokrates compile -i path_to_your_.code_file
+(example: ./target/release/zokrates compile -i ./../data/youngerThanX.code)
+
+3. //in docker: run generator function, giving prover key (pk) and verification key (vk)
+> ./target/release/zokrates setup
+
+4. // in docker: create a solidity contract based on information above. This contract automatically includes the verification key hardcoded
+> ./target/release/zokrates export-verifier. The contract can be found in challenge.sol
+
+5. //publish contract to Blockchain
+
+<Continue here>
+

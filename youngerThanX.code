@@ -1,0 +1,6 @@
+// this file is an example for a circuit to attest that the company has an age in days below a treshold
+// secret is the actual age of the company 
+// main tests if the actual age of the company is below than the treshold age (x) and returns a bool (1/0)
+def main(x, private secret):
+  b = if secret < x then 1 else 0 fi
+  return b
