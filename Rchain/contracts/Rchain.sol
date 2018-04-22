@@ -50,6 +50,8 @@ contract Rchain is Pausable {
     
      /**
     * @dev sets an Ethereum address as a trusted person and assigns a (real world) name to this address
+    * @param _addressTrustedPerson is the Ethereum address that is controlled by the trusted person
+    * @param _nameTrustedPerson is the (real world) name that belongs to the trusted person.
     */
     function setTrustedPerson(address _addressTrustedPerson, string _nameTrustedPerson) onlyOwner whenNotPaused public {
         // requirements to check the validity of an address, 
@@ -64,6 +66,7 @@ contract Rchain is Pausable {
     
     /**
     * @dev sets an Ethereum address as a coop member
+    * @param _addressCoopMember is the Ethereum addres that is controlled by the coop member
     */
     function setCoopMember(address _addressCoopMember) onlyOwner whenNotPaused public {
         // requirements to check the validity of an address and 
@@ -77,6 +80,7 @@ contract Rchain is Pausable {
      
     /**
     * @dev removes an Ethereum address as a trusted person
+    * @param _trustedPersonListPostion is the position in the TrustedPersonsList array (ln 17) which stores the address of the trusted person
     */
     function removeTrustedPeron(uint _trustedPersonsListPosition) onlyOwner whenNotPaused public {
         emit trustedPersonRemoved(trustedPersonsList[_trustedPersonsListPosition]);
@@ -86,6 +90,7 @@ contract Rchain is Pausable {
     
     /**
     * @dev removes an Ethereum address as a coop member
+    * @param _coopMembersListPosition is the position in the CoopMembersList array (ln 20) which stores the addresse of the coop member
     */
     function removeCoopMember(uint _coopMembersListPosition) onlyOwner whenNotPaused public {
         emit coopMemberRemoved(coopMembersList[_coopMembersListPosition]); 

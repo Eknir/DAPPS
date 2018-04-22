@@ -30,6 +30,7 @@ contract Genesis is Rchain{
     /**
     * @dev this function sets the next bit in the blockHeightBits array. The first attester is the msg.sender (owner of the contract)
     * CAUTION! Once published, a bit cannot be reverted anymore
+    * @param _bit is the next bit to be stored in the blockheightBits array
     */
     function setBlockheightBit(uint8 _bit) whenNotPaused onlyOwner public {
         require((_bit ==  1) || (_bit == 0));
@@ -45,9 +46,12 @@ contract Genesis is Rchain{
     * A distinction between coop members and trusted persons is made since trusted persons are 
     * expected to have heard about the correctness of a bit from a primary source, whereas coop members most likely have heard 
     * about the correctness via a (possibly hijacked) communication channel.
+    * @param _bitposition is the position of the to-be attested bit 
+    * @param _bit is the expected bit at the blockheightBits[_bitPosition]
     */
-    function attestBit(uint8 _bitPosition) whenNotPaused onlyTrustedOrCoop public {
+    function attestBit(uint _bitPosition, uint8 _bit) whenNotPaused onlyTrustedOrCoop public {
         require(_bitPosition < bitPosition); 
+        require(blockheightBits[_bitPosition] == _bit);
 
         if(coopMembers[msg.sender]) {
             memberAttesters[_bitPosition].push(msg.sender);
