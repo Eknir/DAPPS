@@ -10,8 +10,8 @@ contract Rchain is Pausable {
     
     event trustedPersonAdded(address indexed trustedPersonAddress, string trustedPersonName);
     event coopMemberAdded(address indexed coopMemberAddress);
-    event coopMemberRemoved(address indexed coopMemberAddress);
     event trustedPersonRemoved(address indexed trustedPersonAddress);
+    event coopMemberRemoved(address indexed coopMemberAddress);
     
     // pyrofex employees / coop board members addresses
     address[] public trustedPersonsList;

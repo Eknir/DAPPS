@@ -16,10 +16,10 @@ contract Genesis is Rchain{
     // keeps track of the amount of bits published
     uint public bitPosition;
     
-    //24 bit unsigned int can represent [0- 16,777,215]. Projected blockheight at 31 dec 2018 is 6,360250 
-    // == 5,485,368 (current blockheight)+ 2185900(seconds till 31/12) / 25(average blocktime in seconds)
-    // array to keep track of all published bits
-    uint8[24] public blockHeightBits;
+    // Fixed size (24 positions) array to keep track of all published bits.
+    // 24 bit unsigned int can represent [0- 16,777,215]. Projected blockheight at 31 dec 2018 is 6,360250 
+    // == 5,485,368 (current blockheight)+ 2185900(seconds at 22/4/18 till 31/12/18) / 25(average blocktime in seconds)
+    uint8[24] public blockheightBits;
     
     // maps the bitposition to an array of trusted attesters (pyrofex/coop board members) who attested on the correctness of the bit at that position
     mapping(uint => address[]) public trustedAttesters;
@@ -33,7 +33,7 @@ contract Genesis is Rchain{
     */
     function setBlockheightBit(uint8 _bit) whenNotPaused onlyOwner public {
         require((_bit ==  1) || (_bit == 0));
-        blockHeightBits.push(_bit);
+        blockheightBits.push(_bit);
         trustedAttesters[bitPosition].push(msg.sender);
         bitPosition ++;
         emit bitAdded(msg.sender, _bit, bitPosition);
@@ -46,8 +46,8 @@ contract Genesis is Rchain{
     * expected to have heard about the correctness of a bit from a primary source, whereas coop members most likely have heard 
     * about the correctness via a (possibly hijacked) communication channel.
     */
-    function attestBit(uint8 _bitPosition) onlyTrustedOrCoop whenNotPaused public {
-        require(_bitPosition < bitPosition);
+    function attestBit(uint8 _bitPosition) whenNotPaused onlyTrustedOrCoop public {
+        require(_bitPosition < bitPosition); 
 
         if(coopMembers[msg.sender]) {
             memberAttesters[_bitPosition].push(msg.sender);
