@@ -1,6 +1,5 @@
 pragma solidity ^0.4.21; 
-import "./Ownable.sol";
-import "./Pausable.sol";
+import "../Open_Zeppelin/Pausable.sol";
 
 /**
  * @title Rchain
@@ -27,7 +26,7 @@ contract Rchain is Pausable {
     mapping(address => bool) coopMembers;
     
     /**
-    * @dev throws when the caller is not a trusted person
+    * @dev throws when the caller is not a trusted person, not used in Genesis contract
     */
     modifier onlyTrustedPerson() {
         require(keccak256(trustedPersons[msg.sender]) != keccak256(""));
@@ -35,11 +34,18 @@ contract Rchain is Pausable {
     }
     
     /**
-    * @dev throws when the caller is not a coop member
+    * @dev throws when the caller is not a coop member, not used in Genesis contract
     */
     modifier onlyCoopMember {
         require(coopMembers[msg.sender]);
         _;
+    }
+
+    /**
+    * @dev throws when the calles is neither a coop member nor trusted person
+    */
+    modifier onlyTrustedOrCoop() {
+        require((coopMembers[msg.sender]) || (keccak256(trustedPersons[msg.sender]) != keccak256(""))
     }
     
      /**
@@ -51,10 +57,8 @@ contract Rchain is Pausable {
         require(_addressTrustedPerson != address(0));
         require(keccak256(_nameTrustedPerson) != keccak256(""));
         require(coopMembers[_addressTrustedPerson] != true);
-        
         trustedPersonsList.push(_addressTrustedPerson);
         trustedPersons[_addressTrustedPerson] = _nameTrustedPerson;
-        
         emit trustedPersonAdded(_addressTrustedPerson, _nameTrustedPerson);
     }
     
@@ -66,13 +70,10 @@ contract Rchain is Pausable {
         // whether the address does not belong already to a coop member
         require(_addressCoopMember != address(0));
         require(keccak256(trustedPersons[_addressCoopMember]) == keccak256(""));
-        
         coopMembersList.push(_addressCoopMember);
         coopMembers[_addressCoopMember] = true;
-        
         emit coopMemberAdded(_addressCoopMember);
-    }
-    
+    } 
      
     /**
     * @dev removes an Ethereum address as a trusted person
