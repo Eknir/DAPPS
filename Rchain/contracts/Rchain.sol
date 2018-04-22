@@ -1,5 +1,5 @@
 pragma solidity ^0.4.21; 
-import "../Open_Zeppelin/Pausable.sol";
+import "./Pausable.sol";
 
 /**
  * @title Rchain
@@ -45,7 +45,8 @@ contract Rchain is Pausable {
     * @dev throws when the calles is neither a coop member nor trusted person
     */
     modifier onlyTrustedOrCoop() {
-        require((coopMembers[msg.sender]) || (keccak256(trustedPersons[msg.sender]) != keccak256(""))
+        require((coopMembers[msg.sender]) || (keccak256(trustedPersons[msg.sender])) != keccak256(""));
+        _;
     }
     
      /**
@@ -80,7 +81,7 @@ contract Rchain is Pausable {
      
     /**
     * @dev removes an Ethereum address as a trusted person
-    * @param _trustedPersonListPostion is the position in the TrustedPersonsList array (ln 17) which stores the address of the trusted person
+    * @param _trustedPersonsListPosition is the position in the TrustedPersonsList array (ln 17) which stores the address of the trusted person
     */
     function removeTrustedPeron(uint _trustedPersonsListPosition) onlyOwner whenNotPaused public {
         emit trustedPersonRemoved(trustedPersonsList[_trustedPersonsListPosition]);
@@ -99,4 +100,3 @@ contract Rchain is Pausable {
     }
     
 }
-    
