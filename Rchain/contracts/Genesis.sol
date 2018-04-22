@@ -9,7 +9,8 @@ import "./Rchain.sol";
 * The owner of the contract can publish the bits, after which trusted persons and coop members can attest on its correctness.
 */
 contract Genesis is Rchain{
-    event bitAdded(address indexed attester, uint8 bit, uint indexed bitsPublished);
+    event bitAdded(address indexed attester, uint8 bit, uint bitPosition);
+    event bitOverwritten(address indexed attester, uint8 bit);
     event trustedPersonBitAttested(address indexed attester, uint8 bit);
     event coopMemberBitAttested(address indexed attester, uint8 bit);
     
@@ -54,11 +55,24 @@ contract Genesis is Rchain{
         require(blockheightBits[_bitPosition] == _bit);
 
         if(coopMembers[msg.sender]) {
+            require(trustedAttesters[_bitPosition][0] != 0);
             memberAttesters[_bitPosition].push(msg.sender);
-            emit coopMemberBitAttested(msg.sender, _bitPosition)
+            emit coopMemberBitAttested(msg.sender, _bitPosition);
         } else {
             trustedAttesters[_bitPosition].push(msg.sender);
             emit trustedPersonBitAttested(msg.sender, _bitPosition);
         }
+    }
+    
+    /**
+    * @dev this function allows the last published bit to be overwritten (in case there is a mistake) if and only if there are no trusted attesters yet.
+    * @param _bit is the new value of the last published _bit.
+    */
+    function overwriteBit(uint8 _bit) whenNotPaused onlyOwner public {
+        require((_bit ==  1) || (_bit == 0));
+        require(blockheightBits[bitPosition-1] != _bit);
+        require(trustedAttesters[_bitPosition] != 0);
+        blockheightBits[bitPosition-1] = _bit;
+        emit bitOverwritten(msg.sender, _bit);
     }
 }
