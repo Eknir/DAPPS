@@ -84,7 +84,7 @@ contract Rchain is Pausable {
     * @dev removes an Ethereum address as a trusted person
     * @param _trustedPersonsListPosition is the position in the TrustedPersonsList array (ln 17) which stores the address of the trusted person
     */
-    function removeTrustedPeron(uint _trustedPersonsListPosition) onlyOwner whenNotPaused public {
+    function removeTrustedPerson(uint _trustedPersonsListPosition) onlyOwner whenNotPaused public {
         emit trustedPersonRemoved(trustedPersonsList[_trustedPersonsListPosition]);
         trustedPersons[trustedPersonsList[_trustedPersonsListPosition]] = "";
         trustedPersonsList[_trustedPersonsListPosition] = 0;

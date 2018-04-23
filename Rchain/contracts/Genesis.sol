@@ -23,10 +23,12 @@ contract Genesis is Rchain{
     uint8[24] public blockheightBits;
     
     // maps the bitposition to an array of trusted attesters (pyrofex/coop board members) who attested on the correctness of the bit at that position
-    mapping(uint => address[]) public trustedAttesters;
+    mapping(uint => mapping(address => bool)) public trustedAttesters;
+    
+    mapping(uint => bool) public hasFirstAttester;
     
     // maps the bitposition to an array of member attesters who attested on the correctness of the bit at that position
-    mapping(uint => address[]) public memberAttesters;
+    mapping(uint => mapping(address => bool)) public memberAttesters;
     
     /**
     * @dev this function sets the next bit in the blockHeightBits array. The first attester is the msg.sender (owner of the contract)
@@ -54,15 +56,17 @@ contract Genesis is Rchain{
         require(blockheightBits[_bitPosition] == _bit);
 
         if(coopMembers[msg.sender]) {
-            require(trustedAttesters[_bitPosition][0] != 0);
-            memberAttesters[_bitPosition].push(msg.sender);
+            require(hasFirstAttester[_bitPosition]);
+            require(!memberAttesters[_bitPosition][msg.sender]);
+            memberAttesters[_bitPosition][msg.sender] = true;
             emit coopMemberBitAttested(msg.sender, _bitPosition);
         } else {
-            trustedAttesters[_bitPosition].push(msg.sender);
+            require(!trustedAttesters[_bitPosition][msg.sender]);
+            trustedAttesters[_bitPosition][msg.sender] = true;
+            hasFirstAttester[_bitPosition] = true;
             emit trustedPersonBitAttested(msg.sender, _bitPosition);
         }
     }
-    //TODO! make sure that a person cannot attest twice on the correctness of a bit;
     
     /**
     * @dev this function allows the last published bit to be overwritten (in case there is a mistake) if and only if there are no trusted attesters yet.
@@ -71,7 +75,7 @@ contract Genesis is Rchain{
     function overwriteBit(uint8 _newBit) whenNotPaused onlyOwner public {
         require((_newBit ==  1) || (_newBit == 0));
         require(blockheightBits[bitPosition-1] != _newBit);
-        require(trustedAttesters[bitPosition -1][0] == 0);
+        require(!hasFirstAttester[bitPosition-1]);
         blockheightBits[bitPosition-1] = _newBit;
         emit bitOverwritten(msg.sender, _newBit);
     }
