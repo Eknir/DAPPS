@@ -36,7 +36,6 @@ contract Genesis is Rchain{
     function setBlockheightBit(uint8 _bit) whenNotPaused onlyOwner public {
         require((_bit ==  1) || (_bit == 0));
         blockheightBits[bitPosition] = _bit;
-        trustedAttesters[bitPosition].push(msg.sender);
         bitPosition ++;
         emit bitAdded(msg.sender, _bit, bitPosition);
     }
@@ -63,16 +62,17 @@ contract Genesis is Rchain{
             emit trustedPersonBitAttested(msg.sender, _bitPosition);
         }
     }
+    //TODO! make sure that a person cannot attest twice on the correctness of a bit;
     
     /**
     * @dev this function allows the last published bit to be overwritten (in case there is a mistake) if and only if there are no trusted attesters yet.
-    * @param _bit is the new value of the last published _bit.
+    * @param _newBit is the new value of the last published _bit.
     */
-    function overWriteBit(uint8 _bit) whenNotPaused onlyOwner public {
-        require((_bit ==  1) || (_bit == 0));
-        require(blockheightBits[bitPosition-1] != _bit);
-        require(trustedAttesters[bitPosition -1][0] != 0);
-        blockheightBits[bitPosition-1] = _bit;
-        emit bitOverwritten(msg.sender, _bit);
+    function overwriteBit(uint8 _newBit) whenNotPaused onlyOwner public {
+        require((_newBit ==  1) || (_newBit == 0));
+        require(blockheightBits[bitPosition-1] != _newBit);
+        require(trustedAttesters[bitPosition -1][0] == 0);
+        blockheightBits[bitPosition-1] = _newBit;
+        emit bitOverwritten(msg.sender, _newBit);
     }
 }

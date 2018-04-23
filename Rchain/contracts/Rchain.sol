@@ -23,7 +23,7 @@ contract Rchain is Pausable {
     mapping(address => string) public trustedPersons;
     
     // mapping to simplify lookup of whether an address belongs to a coop member
-    mapping(address => bool) coopMembers;
+    mapping(address => bool) public coopMembers;
     
     /**
     * @dev throws when the caller is not a trusted person, not used in Genesis contract
@@ -60,6 +60,7 @@ contract Rchain is Pausable {
         require(_addressTrustedPerson != address(0));
         require(keccak256(_nameTrustedPerson) != keccak256(""));
         require(coopMembers[_addressTrustedPerson] != true);
+        // TODO! make sure that a person cannot have a double entry
         trustedPersonsList.push(_addressTrustedPerson);
         trustedPersons[_addressTrustedPerson] = _nameTrustedPerson;
         emit trustedPersonAdded(_addressTrustedPerson, _nameTrustedPerson);
