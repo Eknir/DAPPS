@@ -39,6 +39,8 @@ contract("Rchain", accounts => {
 
 	});
 
+	// Test for functionality: make sure that a person cannot be registed as a trusted person twice
+
 	it("Should correctly process setting a trusted person", async function () {
 		const owner = await rchain.owner.call();
 		await rchain.setTrustedPerson(owner, "owner", {from: owner});
@@ -71,6 +73,9 @@ contract("Rchain", accounts => {
 		await assert.equal(firstTrustedPerson, trustedPerson, "trustedPerson is not the first Coop member");
 		await assertRevert(rchain.setCoopMember(trustedPerson, {from: owner}), "It accepted trustedPerson as a coop member, even though trustedPerson is already a trusted person");
 	});
+
+	// Test for functionality: make sure that a person cannot be registed as a coop member twice
+
 
 	it("Should correctly process setting a coop member", async function () {
 		const owner = await rchain.owner.call();

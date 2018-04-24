@@ -60,7 +60,7 @@ contract Rchain is Pausable {
         require(_addressTrustedPerson != address(0));
         require(keccak256(_nameTrustedPerson) != keccak256(""));
         require(coopMembers[_addressTrustedPerson] != true);
-        // TODO! make sure that a person cannot have a double entry
+        require(keccak256(trustedPersons[_addressTrustedPerson]) == keccak256(""));
         trustedPersonsList.push(_addressTrustedPerson);
         trustedPersons[_addressTrustedPerson] = _nameTrustedPerson;
         emit trustedPersonAdded(_addressTrustedPerson, _nameTrustedPerson);
@@ -75,6 +75,7 @@ contract Rchain is Pausable {
         // whether the address does not belong already to a coop member
         require(_addressCoopMember != address(0));
         require(keccak256(trustedPersons[_addressCoopMember]) == keccak256(""));
+        require(coopMembers[_addressCoopMember] == false);
         coopMembersList.push(_addressCoopMember);
         coopMembers[_addressCoopMember] = true;
         emit coopMemberAdded(_addressCoopMember);
