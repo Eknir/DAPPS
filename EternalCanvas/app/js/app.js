@@ -31,11 +31,13 @@ Ownable.setProvider(web3.currentProvider);
 
 function purchaseRight(time, bidPrice) {
     return EternalCanvas.deployed()
+    //TODO! Gas amount?
     .then(instance => instance.purchaseRight(time, {from: account, value: web3.toWei(bidPrice, 'ether'), gas: 100000}))
 }
 
 function draw(time, color, position) {
 	return EternalCanvas.deployed()
+	//TODO! Gas amount?
     .then(instance => instance.draw(time, color, position, {from: account, gas: 100000}))
 }
 
