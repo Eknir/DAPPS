@@ -42,40 +42,102 @@ function drawPixel(time, color, position) {
     .then(instance => instance.draw(time, color, position, {from: account, gas: 100000}))
 }
 
+let canvasDrawn = false;
 async function drawCanvas(instance) {
+	//TODO! only fill the canvas, but don't let it be drawn from the ground up
    	const diameter = 10
 	// initialize canvas
-	var doc = document;
+	let doc = document;
 	canvas = doc.getElementById("canvas");
 	canvas.innerHTML = "Loading canvas...";
-	var fragment = doc.createDocumentFragment(); 
+	let fragment = doc.createDocumentFragment(); 
 	for (i = 0; i < diameter; i++) {
-		var tr = doc.createElement("tr");
+		let tr = doc.createElement("tr");
     	for (j = 0; j < diameter; j++) {
-    		var td = doc.createElement("td");
+    		let pixel = doc.createElement("td");
     		argument = parseInt((i.toString() + j.toString()))
-    		td.innerHTML = argument;
+    		pixel.innerHTML = argument;
     		color = await instance.pixels.call((argument))
     		if(color == 0x00) {
-    			td.style.background= 'Red';
+    			pixel.style.background= 'Red';
     		}
     		else if(color == 0x01) {
-    			td.style.background= 'Green';
+    			pixel.style.background= 'Green';
     		}
     		else {
-    			td.style.background= 'Blue';
+    			pixel.style.background= 'Blue';
     		}
-    		tr.appendChild(td);
+    		//pixel.addEventListener('click', function() {
+    			//$("#drawData").elements[0].html("hello")
+    		//})
+    		tr.appendChild(pixel);
 	    }
     		//does not trigger reflow
    		fragment.appendChild(tr);
 	}
-	var table = doc.createElement("table");
+	let table = doc.createElement("table");
 	table.style.width = 500;
 	table.style.height = 500;
+	table.id = "canvasTable"
 	table.appendChild(fragment);
 	canvas.innerHTML = "";
 	canvas.appendChild(table);
+
+	watchEvents(instance);
+}
+
+function watchEvents(instance) {
+	const startBlock = web3.eth.getBlock("latest").number;
+       	//this is how we create an event watcher. Note that we are filtering on potentialArtist: account
+       	instance.logBidPlaced({potentialArtist: account}, {fromBlock: startBlock, toBlock: "latest"}).watch(function(error, response) {
+       		if(!error) {
+				console.log("This is the response from logBidPlaced: ", response);
+				//TODO! better code style?
+				//TODO! Logic for overbid?
+				let par = document.createElement("P");
+				let par1 = document.createElement("P");
+				let time = document.createTextNode(response.args.time.toString(10));
+				let bid = document.createTextNode(web3.fromWei(response.args.bid, "ether"));
+				par.appendChild(time);
+				par1.appendChild(bid);
+				
+				$("#outstandingBids").append(par);
+				$("#outstandingBids").append(par1);
+       		}
+       		else {
+       			console.error("Unable to retrieve event for logBidPlaced")
+       		}
+       		
+       	})
+       
+       	instance.logPixelDrawn({}, {fromBlock: startBlock, toBlock: "latest"}).watch(function(error, response) {
+       		if(!error) {
+       			console.log("This is the response from logPixelDrawn: ", response);
+       			
+ 				if(response.args.position - 10 < 0) {
+ 					positionRow = 0
+ 					positionColumn = response.args.position.toString(10)
+ 				}
+ 				else {
+       				positionRow = response.args.position.toString(10).slice(0, 1);
+       				positionColumn = response.args.position.toString(10).slice(1, 2);
+       			}
+       			color = response.args.color;
+       			pixel = document.getElementById("canvasTable").rows[parseInt(positionRow)].children[parseInt(positionColumn)];
+       			if(color == 0x00) {
+    				pixel.style.background = "Red";
+    			}
+    			else if(color == 0x01) {
+    				pixel.style.background= 'Green';
+    			}
+    			else {
+    				pixel.style.background= 'Blue';
+    			}      			
+       		}
+       		else {
+       			console.error("Unable to retrieve event for logPixelDrawn")
+       		}	
+       	})
 }
 
 $("#drawData").submit(function(e) {
@@ -95,6 +157,7 @@ $("#purchaseData").submit(function(e) {
 	})
 
 window.addEventListener('load', function() {
+	//TODO click for draw pixel?
 	let canvas = $("#canvas");
     return web3.eth.getAccountsPromise()
         .then(accounts => {
@@ -114,53 +177,16 @@ window.addEventListener('load', function() {
             return EternalCanvas.deployed();
         })
         .then(instance => {
-        	console.log(instance.pixels.call(55))
-
         	drawCanvas(instance);
         	console.log("Contract Address: " + instance.address)
         	//let time = new Date(year, month, day, hour, minutes)
         	//console.log(time)
-        	let ts = Math.round(Date.now() / 1000);
-        	let mod = ts % 60
-        	ts = ts - mod
-        	$("#ts").html("current UTC timestamp (rounded to minutes): " + ts);
-
-        	//this is how we create an event watcher. Note that we are filtering on potentialArtist: account
-        	instance.logBidPlaced({potentialArtist: account}, {fromBlock:0, toBlock: "latest"}).watch(function(error, response) {
-        		if(!error) {
-					console.log("This is the response from logBidPlaced: ", response);
-					//TODO! Better?
-					let par = document.createElement("P");
-					let par1 = document.createElement("P");
-					let time = document.createTextNode(response.args.time.toString(10));
-					let bid = document.createTextNode(web3.fromWei(response.args.bid, "ether"));
-					par.appendChild(time);
-					par1.appendChild(bid);
-					
-					$("#outstandingBids").append(par);
-					$("#outstandingBids").append(par1);
-        		}
-        		else {
-        			console.error("Unable to retrieve event for logBidPlaced")
-        		}
-        		
-        	})
-        	//TODO! Filter on artist = account
-        	instance.logPixelDrawn({}, {fromBlock:0, toBlock: "latest"}).watch(function(error, response) {
-        		if(!error) {
-        			console.log("This is the response from logPixelDrawn: ", response);
-        			//TODO: Update canvas
-        		}
-        		else {
-        			console.error("Unable to retrieve event for logPixelDrawn")
-        		}
-        			
-        	})
+        	let timestamp = Math.round(Date.now() / 1000);
+        	let mod = timestamp % 60
+        	minuteTimestamp = timestamp - mod
+        	$("#timestamp").html("current UTC timestamp (rounded to minutes): " + minuteTimestamp);
         })
         // Never let an error go unlogged.
         .catch(console.error);
  });
-
-
-console.log(document.getElementById("canvas"))
 
