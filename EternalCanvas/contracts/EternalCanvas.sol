@@ -39,6 +39,12 @@ contract EternalCanvas is Ownable {
     mapping(uint => bid) drawingRight;
     mapping(address => uint) payback;
     
+    /**
+    * @dev returns the whole pixels array
+    */
+    function getPixels() view public returns(bytes1[100]) {
+        return pixels;
+    }
 
     /**
     * @dev Allows the user to place a bid on the right to draw at the canvas between time and time + 2 days. Time intervals are in minutes, bids can only placed for a time in the future, 

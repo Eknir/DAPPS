@@ -30,6 +30,8 @@ const Ownable = truffleContract(ownableJson);
 EternalCanvas.setProvider(web3.currentProvider);
 Ownable.setProvider(web3.currentProvider);
 
+const diameter = 10;
+
 function purchaseRight(time, bidPrice) {
     return EternalCanvas.deployed()
     //TODO! Gas amount?
@@ -44,44 +46,43 @@ function drawPixel(time, color, position) {
 
 let canvasDrawn = false;
 async function drawCanvas(instance) {
+	pixels = await instance.getPixels.call()
+
 	//TODO! only fill the canvas, but don't let it be drawn from the ground up
-   	const diameter = 10
 	// initialize canvas
-	let doc = document;
-	canvas = doc.getElementById("canvas");
-	canvas.innerHTML = "Loading canvas...";
-	let fragment = doc.createDocumentFragment(); 
-	for (i = 0; i < diameter; i++) {
-		let tr = doc.createElement("tr");
+	 let doc = document;
+	 canvas = doc.getElementById("canvas");
+	 canvas.innerHTML = "Loading canvas...";
+	 let fragment = doc.createDocumentFragment(); 
+	 let counter = 0;
+	 for (i = 0; i < diameter; i++) {
+	 	let tr = doc.createElement("tr");
     	for (j = 0; j < diameter; j++) {
-    		let pixel = doc.createElement("td");
-    		argument = parseInt((i.toString() + j.toString()))
-    		pixel.innerHTML = argument;
-    		color = await instance.pixels.call((argument))
-    		if(color == 0x00) {
-    			pixel.style.background= 'Red';
-    		}
-    		else if(color == 0x01) {
-    			pixel.style.background= 'Green';
-    		}
-    		else {
-    			pixel.style.background= 'Blue';
-    		}
-    		//pixel.addEventListener('click', function() {
-    			//$("#drawData").elements[0].html("hello")
-    		//})
-    		tr.appendChild(pixel);
-	    }
-    		//does not trigger reflow
-   		fragment.appendChild(tr);
-	}
-	let table = doc.createElement("table");
-	table.style.width = 500;
-	table.style.height = 500;
-	table.id = "canvasTable"
-	table.appendChild(fragment);
-	canvas.innerHTML = "";
-	canvas.appendChild(table);
+     		let pixel = doc.createElement("td");
+     		pixel.innerHTML = counter;
+     		color = pixels[counter]
+     		if(color == 0x00) {
+     			pixel.style.background= 'Red';
+     		}
+     		else if(color == 0x01) {
+     			pixel.style.background= 'Green';
+     		}
+     		else {
+     			pixel.style.background= 'Blue';
+     		}
+     		tr.appendChild(pixel);
+     		counter++;
+     }
+   		//does not trigger reflow
+    		fragment.appendChild(tr);
+	 }
+	 let table = doc.createElement("table");
+	 table.style.width = 500;
+	 table.style.height = 500;
+	 table.id = "canvasTable"
+	 table.appendChild(fragment);
+	 canvas.innerHTML = "";
+	 canvas.appendChild(table);
 
 	watchEvents(instance);
 }
@@ -114,7 +115,7 @@ function watchEvents(instance) {
        		if(!error) {
        			console.log("This is the response from logPixelDrawn: ", response);
        			
- 				if(response.args.position - 10 < 0) {
+ 				if(response.args.position - diameter < 0) {
  					positionRow = 0
  					positionColumn = response.args.position.toString(10)
  				}
@@ -179,14 +180,11 @@ window.addEventListener('load', function() {
         .then(instance => {
         	drawCanvas(instance);
         	console.log("Contract Address: " + instance.address)
-        	//let time = new Date(year, month, day, hour, minutes)
-        	//console.log(time)
         	let timestamp = Math.round(Date.now() / 1000);
         	let mod = timestamp % 60
         	minuteTimestamp = timestamp - mod
         	$("#timestamp").html("current UTC timestamp (rounded to minutes): " + minuteTimestamp);
         })
-        // Never let an error go unlogged.
         .catch(console.error);
  });
 

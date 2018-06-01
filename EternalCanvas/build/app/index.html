@@ -1,0 +1,35 @@
+<html>
+<body>
+	<h1>Eternal Canvas</h1>
+	<div>Your Ethereum address: <span id="address">Loading...</span></div><br>
+	<div id ="canvas">
+	</div><br>
+
+	<div id = timestamp></div><br>
+
+
+	<h2>Draw</h2>
+	<form id= "drawData">
+		Pixel index: <input type="number">
+		timestamp: <input type="number">
+		<select id ="pixelColor">
+			<option value="0x00">Red</option>
+			<option value="0x01">Green</option>
+			<option value="0x02">Blue</option>
+		<input type="submit" name="Submit"> <br>
+	</form>
+
+	<h2>Auction</h2>
+	<form id= "purchaseData">
+		timeStamp: <input type="number"><br>
+		valueEth: <input type ="number">
+		<input type="submit" name="Submit"> <br>
+	</form>
+
+	<h2>Your outstanding bids</h2>
+	<div id="outstandingBids"></div>
+	<head>
+		<script type="text/javascript" src="./js/app.js"></script>
+	</head>
+</body>
+</html>
