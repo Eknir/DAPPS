@@ -44,6 +44,20 @@ function drawPixel(time, color, position) {
     .then(instance => instance.draw(time, color, position, {from: account, gas: 100000}))
 }
 
+let firstTime = true;
+function updateClock() {
+	let timestamp = Math.round(Date.now() / 1000);
+	if(timestamp % 60 == 0 || firstTime) {
+        let mod = timestamp % 60
+        minuteTimestamp = timestamp - mod
+        $("#timestamp").html("current UTC timestamp (rounded to minutes): " + minuteTimestamp);
+        $("#timestampPlusOne").html("current UTC timestamp + 1 minute (rounded to minutes): " + (parseInt(minuteTimestamp) + 60));
+	}
+	firstTime = false;
+    setTimeout(updateClock, 1000);
+}
+updateClock(); // initial call
+
 let canvasDrawn = false;
 async function drawCanvas(instance) {
 	pixels = await instance.getPixels.call()
@@ -179,11 +193,6 @@ window.addEventListener('load', function() {
         })
         .then(instance => {
         	drawCanvas(instance);
-        	console.log("Contract Address: " + instance.address)
-        	let timestamp = Math.round(Date.now() / 1000);
-        	let mod = timestamp % 60
-        	minuteTimestamp = timestamp - mod
-        	$("#timestamp").html("current UTC timestamp (rounded to minutes): " + minuteTimestamp);
         })
         .catch(console.error);
  });
